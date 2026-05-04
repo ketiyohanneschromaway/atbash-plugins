@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "atbash": {
+      "command": "node",
+      "args": [
+        "/absolute/path/to/atbash-integrations/examples/mcp-demo/run-server.mjs"
+      ],
+      "env": {
+        "ATBASH_AGENT_PRIVKEY": "your-64-hex-private-key",
+        "ATBASH_ENDPOINT": "https://atbash.ai"
+      }
+    }
+  }
+}

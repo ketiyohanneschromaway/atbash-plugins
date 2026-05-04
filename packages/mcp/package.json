@@ -1,0 +1,20 @@
+{
+  "name": "@atbash/mcp",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "atbash-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@atbash/common": "file:../common",
+    "@atbash/sdk": "^0.3.6",
+    "@modelcontextprotocol/sdk": "^1.12.3",
+    "zod": "^3.25.76"
+  }
+}
