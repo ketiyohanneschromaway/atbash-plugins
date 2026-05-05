@@ -5,6 +5,7 @@ import { DynamicStructuredTool } from "@langchain/core/tools";
 import { z } from "zod";
 import { ChatOpenAI } from "@langchain/openai";
 import { HumanMessage } from "@langchain/core/messages";
+import { StructuredTool } from "@langchain/core/tools";
 
 import { withAtbashGuard } from "@atbash/langchain";
 
@@ -24,7 +25,7 @@ function requireEnv(name: string): string {
 
 async function runPromptOnce(opts: {
   model: ChatOpenAI;
-  tool: DynamicStructuredTool;
+  tool: StructuredTool;
   prompt: string;
 }): Promise<void> {
   const modelWithTools = opts.model.bindTools([opts.tool]);
@@ -97,8 +98,8 @@ async function main() {
   });
 
   // --- Guard the tool with Atbash ---
-  const guardedTransferFunds = withAtbashGuard(transferFunds, agent, judgeOpts);
-
+  const guardedTransferFunds = withAtbashGuard(transferFunds as any, agent, judgeOpts) as unknown as StructuredTool;
+  
   console.log("\n=== Case 1: $50 to Bob (expected: ALLOW) ===\n");
   await runPromptOnce({
     model,

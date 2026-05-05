@@ -9,6 +9,7 @@ The integrations assume the current published SDK behavior where the agent priva
 - `@atbash/mcp` — MCP server exposing Atbash safety and query tools
 - `@atbash/eliza-plugin` — ElizaOS plugin for guardrails, audit logging, and policy context
 - `@atbash/langgraph` — LangGraph safety gate, audit node, and advisory tool
+- `@atbash/langchain` — LangChain tool wrapper for Atbash safety gating
 - `@atbash/common` — shared private utilities used across the workspace
 
 ## Development
