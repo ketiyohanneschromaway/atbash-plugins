@@ -24,6 +24,8 @@ Each package wraps the same Atbash flow:
 - `@atbash/mcp` — MCP server exposing Atbash safety and query tools
 - `@atbash/eliza-plugin` — ElizaOS plugin for guardrails, audit logging, and policy context
 - `@atbash/langgraph` — LangGraph safety gate, audit node, and advisory tool
+- `@atbash/langchain` — LangChain tool wrapper for Atbash safety gating
+- `@atbash/autogen` — AutoGen safety-judge helper for pre-execution gating
 - `@atbash/common` — shared private utilities used across the workspace
 
 ## Environment

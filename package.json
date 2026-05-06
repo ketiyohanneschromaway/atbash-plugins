@@ -2,7 +2,8 @@
   "name": "atbash-integrations",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "examples/*"
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
@@ -10,6 +11,7 @@
     "build:mcp": "npm run build -w @atbash/mcp",
     "build:eliza": "npm run build -w @atbash/eliza-plugin",
     "build:langgraph": "npm run build -w @atbash/langgraph",
+    "build:autogen": "npm run build -w @atbash/autogen",
     "typecheck": "tsc -p tsconfig.base.json --noEmit"
   },
   "devDependencies": {
@@ -19,6 +21,11 @@
     "vitest": "^3.1.4"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@atbash/sdk": "file:atbash-sdk-0.3.6.tgz"
+=======
+    "@atbash/sdk": "^0.3.6",
+    "express": "^5.1.0"
+>>>>>>> b24a5d791d05f2885d940550dd6fa558f3f1a858
   }
 }
