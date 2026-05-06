@@ -1,48 +1,47 @@
 # `@atbash/langgraph`
 
-LangGraph integration that inserts an Atbash guard before tool execution and an audit node after tools run.
+Add Atbash as a guard node inside a LangGraph workflow.
 
-It expects an Atbash private key or preloaded agent, then lets the SDK handle signature-based agent identification and blockchain writes for guard and audit operations.
+Use this when your agent already has a graph with an `agent` step and a `tools` step, and you want Atbash to decide before tool execution.
 
-## When To Use This Package
-
-Use this when you already have a LangGraph app and want to add Atbash around tool execution rather than rebuilding the graph from scratch.
-
-## Install
-
-```bash
-npm install @atbash/langgraph @atbash/sdk
-```
-
-## Required Environment
-
-- `ATBASH_AGENT_PRIVKEY`
-- `ATBASH_ENDPOINT` optional
-
-## Main Exports
+## What This Plugin Adds
 
 - `AtbashStateAnnotation`
+  LangGraph state with Atbash verdict fields.
 - `createGuardNode()`
+  Calls Atbash before tool execution.
 - `createAuditNode()`
+  Logs post-tool output.
 - `addAtbashSafety()`
+  Wires guard and audit nodes into an existing graph.
 - `createJudgeTool()`
+  Optional advisory tool for direct LLM/tool use.
 
-## Existing Graph Example
+## Runtime Model
 
-If you already have a graph with an `agent` node and a `tools` node, wire Atbash in between:
+Recommended flow:
+
+1. `agent` node proposes tool calls
+2. graph routes to `atbash_guard`
+3. verdict:
+   - `ALLOW` → `tools`
+   - `HOLD` → graph interrupt
+   - `BLOCK` → return control with block context
+4. `atbash_audit` logs after real tool execution
+
+## Basic Wiring
 
 ```ts
 import { StateGraph, START, END, MemorySaver } from "@langchain/langgraph";
-import { ToolNode, toolsCondition } from "@langchain/langgraph/prebuilt";
 import { AtbashStateAnnotation, addAtbashSafety } from "@atbash/langgraph";
 
 const builder = new StateGraph(AtbashStateAnnotation)
   .addNode("agent", agentNode)
-  .addNode("tools", toolNode)
+  .addNode("tools", toolsNode)
   .addEdge(START, "agent")
   .addConditionalEdges("agent", (state) => {
-    const next = toolsCondition(state);
-    return next === "tools" ? "atbash_guard" : END;
+    const hasToolCalls = state.messages.at(-1)?.tool_calls?.length;
+    return hasToolCalls ? "atbash_guard" : END;
   });
 
 addAtbashSafety(builder, {
@@ -55,17 +54,39 @@ const app = builder.compile({
 });
 ```
 
-## What Happens At Runtime
+## HOLD Behavior
 
-1. Your model decides to call a tool
-2. The graph routes to `atbash_guard`
-3. Atbash returns `ALLOW`, `HOLD`, or `BLOCK`
-4. `ALLOW` continues to the tool node
-5. `HOLD` interrupts the graph for operator review
-6. `BLOCK` returns control to the agent with blocking context
-7. `atbash_audit` logs the post-tool result
+This package uses native LangGraph interrupt flow.
 
-## Real Runtime Example
+On `HOLD`:
+
+- graph pauses
+- interrupt payload includes `tool_call_id`, reason, action, confidence
+- your app resumes with operator decision
+
+Resume pattern:
+
+```ts
+import { Command } from "@langchain/langgraph";
+
+await app.invoke(new Command({ resume: "approve" }), config);
+```
+
+## What To Do With Verdicts
+
+- `ALLOW`
+  Let graph continue to tools.
+- `HOLD`
+  Pause graph and resume only after operator decision.
+- `BLOCK`
+  Keep tool from running and return block context to agent.
+
+## Recommended Pattern
+
+- use this for workflows where tool execution is already graph-controlled
+- persist state with a checkpointer if you want durable human review
+- keep tool names and arguments descriptive so Atbash sees useful action text
+
+## Example
 
 - [examples/langgraph-runtime-agent/README.md](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/langgraph-runtime-agent/README.md)
-- [examples/langgraph-runtime-agent/run.mjs](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/langgraph-runtime-agent/run.mjs)

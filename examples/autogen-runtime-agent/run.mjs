@@ -1,10 +1,15 @@
 import { loadAgent } from "@atbash/sdk";
 import { judgeForAutoGen } from "@atbash/autogen";
 
-const DEFAULT_ATBASH_AGENT_PRIVKEY =
-  "f7fb37278c1283cc925d97ca4fffba7b02aeb2eb4817ec406c520599d683d76a";
+function requireEnv(name) {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`Missing required env var: ${name}`);
+  }
+  return value;
+}
 
-const atbashPrivkey = process.env.ATBASH_AGENT_PRIVKEY ?? DEFAULT_ATBASH_AGENT_PRIVKEY;
+const atbashPrivkey = requireEnv("ATBASH_AGENT_PRIVKEY");
 const atbashEndpoint = process.env.ATBASH_ENDPOINT;
 const requestedAction =
   process.argv.slice(2).join(" ").trim() ||

@@ -1,37 +1,34 @@
 # `@atbash/eliza-plugin`
 
-ElizaOS plugin that adds Atbash safety judgment, policy context, and audit logging.
+Add Atbash to an ElizaOS agent.
 
-## When To Use This Package
+Use this when your agent already runs inside ElizaOS and you want safety checks around actions, policy context in runtime, and audit logging after execution.
 
-Use this when you already have an ElizaOS agent and want to add Atbash with minimal changes.
+## What This Plugin Adds
 
-This package gives you two integration styles:
+- `atbashPlugin`
+  Registers service, provider, evaluator, and explicit safety action.
+- `withAtbashGuard()`
+  Wraps sensitive actions so Atbash decides before execution.
+- `AtbashService`
+  Loads agent identity from runtime settings.
+- `ATBASH_JUDGE`
+  Explicit Eliza action for direct safety checks.
 
-- add the plugin to an existing character
-- wrap specific high-risk custom actions with `withAtbashGuard()`
+## Runtime Model
 
-## Install
+Eliza loads plugin once at startup.
 
-```bash
-npm install @atbash/eliza-plugin @atbash/sdk
-```
+Plugin then:
 
-## Required Settings
+1. derives agent pubkey from private key
+2. exposes policy context through provider
+3. lets actions call Atbash before executing
+4. logs completed actions through evaluator
 
-- `ATBASH_AGENT_PRIVKEY`
-- `ATBASH_ENDPOINT` optional
+## Basic Wiring
 
-## What It Registers
-
-- `atbashPlugin` registers the service, provider, evaluator, and explicit safety action
-- `withAtbashGuard()` wraps custom Eliza actions behind an Atbash verdict gate
-- Reads `ATBASH_AGENT_PRIVKEY` and optional `ATBASH_ENDPOINT` from the runtime settings
-- Uses the SDK's local private-key signing flow so Eliza actions are attributed to the derived Atbash agent identity
-
-## Existing Character Example
-
-If you already have a character, add the plugin and settings:
+Add plugin to your character:
 
 ```ts
 import atbashPlugin from "@atbash/eliza-plugin";
@@ -49,9 +46,7 @@ export const character = {
 };
 ```
 
-## Existing Custom Action Example
-
-If you already have a sensitive custom action, wrap it:
+## Guarding A Sensitive Action
 
 ```ts
 import { withAtbashGuard } from "@atbash/eliza-plugin";
@@ -60,22 +55,39 @@ export const sendFundsAction = {
   name: "SEND_FUNDS",
   description: "Send funds to an external destination",
   validate: async () => true,
-  handler: withAtbashGuard(async () => {
-    await sendFundsSomehow();
+  handler: withAtbashGuard(async (_runtime, message) => {
+    await sendFundsSomehow(message);
     return { success: true, text: "Transfer submitted" };
   }),
 };
 ```
 
-## What Happens At Runtime
+## Explicit Safety Check
 
-1. Eliza loads the plugin
-2. `AtbashService` loads the private key and derives the agent identity
-3. `policyProvider` adds Atbash context to the runtime
-4. `auditEvaluator` can log completed actions
-5. `withAtbashGuard()` or `ATBASH_JUDGE` performs pre-execution checks
+If you want agent or app to call Atbash directly, use `ATBASH_JUDGE`.
 
-## Real Runtime Example
+Expected behavior:
+
+- returns `Verdict: ALLOW` on success path
+- returns held/block reason in callback text
+- does not execute your real action for you
+
+## What To Do With Verdicts
+
+- `ALLOW`
+  Proceed with original action handler.
+- `HOLD`
+  Stop action and surface operator-review requirement.
+- `BLOCK`
+  Stop action and surface policy reason.
+
+## Recommended Pattern
+
+- wrap every irreversible action with `withAtbashGuard()`
+- keep low-risk informational actions unguarded
+- let `policyProvider` add safety context for planning
+- keep `auditEvaluator` enabled for post-action logging
+
+## Example
 
 - [examples/eliza-runtime-agent/README.md](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/eliza-runtime-agent/README.md)
-- [examples/eliza-runtime-agent/run.mjs](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/eliza-runtime-agent/run.mjs)
