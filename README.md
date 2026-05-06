@@ -10,6 +10,7 @@ The integrations assume the current published SDK behavior where the agent priva
 - `@atbash/eliza-plugin` — ElizaOS plugin for guardrails, audit logging, and policy context
 - `@atbash/langgraph` — LangGraph safety gate, audit node, and advisory tool
 - `@atbash/langchain` — LangChain tool wrapper for Atbash safety gating
+- `@atbash/autogen` — AutoGen safety-judge helper for pre-execution gating
 - `@atbash/common` — shared private utilities used across the workspace
 
 ## Development

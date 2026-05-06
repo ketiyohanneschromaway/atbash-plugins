@@ -11,6 +11,7 @@
     "build:mcp": "npm run build -w @atbash/mcp",
     "build:eliza": "npm run build -w @atbash/eliza-plugin",
     "build:langgraph": "npm run build -w @atbash/langgraph",
+    "build:autogen": "npm run build -w @atbash/autogen",
     "typecheck": "tsc -p tsconfig.base.json --noEmit"
   },
   "devDependencies": {
@@ -20,6 +21,7 @@
     "vitest": "^3.1.4"
   },
   "dependencies": {
-    "@atbash/sdk": "^0.3.6"
+    "@atbash/sdk": "^0.3.6",
+    "express": "^5.1.0"
   }
 }
