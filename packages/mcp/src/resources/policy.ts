@@ -1,18 +1,17 @@
 import type { AgentAuth } from "@atbash/sdk";
 import { getAgentPolicy } from "@atbash/sdk";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
 
 type ResourceCapableServer = McpServer & {
   registerResource?: (
     name: string,
+    uri: string,
     config: {
       description?: string;
       mimeType?: string;
-      uri?: string;
-      inputSchema?: unknown;
+      title?: string;
     },
-    handler: (input: { pubkey?: string }) => Promise<{
+    handler: (uri: URL) => Promise<{
       contents: Array<{ uri: string; mimeType: string; text: string }>;
     }>,
   ) => void;
@@ -23,6 +22,15 @@ export function registerPolicyResource(
   agent: AgentAuth,
   endpoint?: string,
 ) {
+  void server;
+  void agent;
+  void endpoint;
+
+  // Current MCP SDK resource registration shape is unstable across versions.
+  // Tool-based policy access remains available through `atbash_get_policy`.
+  return;
+
+  /*
   const resourceServer = server as ResourceCapableServer;
 
   if (!resourceServer.registerResource) {
@@ -31,20 +39,17 @@ export function registerPolicyResource(
 
   resourceServer.registerResource(
     "atbash_policy",
+    "atbash://policy",
     {
       description: "Read the current Atbash policy assigned to an agent.",
       mimeType: "application/json",
-      uri: "atbash://policy",
-      inputSchema: z.object({
-        pubkey: z.string().optional().describe("Agent public key, defaults to the server agent"),
-      }),
     },
-    async ({ pubkey }) => {
-      const policy = await getAgentPolicy(pubkey ?? agent.pubkey, endpoint ? { endpoint } : undefined);
+    async () => {
+      const policy = await getAgentPolicy(agent.pubkey, endpoint ? { endpoint } : undefined);
       return {
         contents: [
           {
-            uri: `atbash://policy/${pubkey ?? agent.pubkey}`,
+            uri: `atbash://policy/${agent.pubkey}`,
             mimeType: "application/json",
             text: JSON.stringify(policy, null, 2),
           },
@@ -52,4 +57,5 @@ export function registerPolicyResource(
       };
     },
   );
+  */
 }

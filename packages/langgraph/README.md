@@ -65,8 +65,7 @@ const app = builder.compile({
 6. `BLOCK` returns control to the agent with blocking context
 7. `atbash_audit` logs the post-tool result
 
-## Example Files
+## Real Runtime Example
 
-- [examples/langgraph-demo/existing-graph.ts](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/langgraph-demo/existing-graph.ts)
-- [examples/langgraph-demo/app.mjs](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/langgraph-demo/app.mjs)
-- [examples/langgraph-demo/README.md](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/langgraph-demo/README.md)
+- [examples/langgraph-runtime-agent/README.md](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/langgraph-runtime-agent/README.md)
+- [examples/langgraph-runtime-agent/run.mjs](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/langgraph-runtime-agent/run.mjs)

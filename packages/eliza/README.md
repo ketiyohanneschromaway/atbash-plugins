@@ -75,9 +75,7 @@ export const sendFundsAction = {
 4. `auditEvaluator` can log completed actions
 5. `withAtbashGuard()` or `ATBASH_JUDGE` performs pre-execution checks
 
-## Example Files
+## Real Runtime Example
 
-- [examples/eliza-demo/existing-character.ts](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/eliza-demo/existing-character.ts)
-- [examples/eliza-demo/sendFundsAction.ts](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/eliza-demo/sendFundsAction.ts)
-- [examples/eliza-demo/guarded-action.mjs](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/eliza-demo/guarded-action.mjs)
-- [examples/eliza-demo/README.md](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/eliza-demo/README.md)
+- [examples/eliza-runtime-agent/README.md](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/eliza-runtime-agent/README.md)
+- [examples/eliza-runtime-agent/run.mjs](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/eliza-runtime-agent/run.mjs)

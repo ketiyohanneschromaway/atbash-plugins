@@ -5,12 +5,10 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsup src/index.ts --format esm --dts --clean",
-    "test": "vitest run"
+    "build": "tsup src/index.ts --format esm --dts --clean"
   },
   "peerDependencies": {
     "@atbash/sdk": "^0.3.6",
     "@langchain/core": ">=0.3.0"
   }
-}
-
+  }

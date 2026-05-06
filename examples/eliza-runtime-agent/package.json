@@ -1,0 +1,13 @@
+{
+  "name": "atbash-eliza-runtime-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node run.mjs"
+  },
+  "dependencies": {
+    "@atbash/eliza-plugin": "^0.1.0",
+    "@atbash/sdk": "^0.3.6",
+    "@elizaos/core": "^1.7.2"
+  }
+}

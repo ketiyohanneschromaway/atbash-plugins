@@ -52,9 +52,6 @@ If you already have a client like Claude Desktop, point it at the server process
 }
 ```
 
-A ready-to-edit example is here:
-[examples/mcp-demo/claude_desktop_config.example.json](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/mcp-demo/claude_desktop_config.example.json)
-
 ## What Tools It Exposes
 
 - `atbash_judge`
@@ -81,8 +78,3 @@ In an existing MCP client workflow:
 2. If the verdict is `ALLOW`, proceed
 3. If the verdict is `HOLD`, wait for operator review and poll `atbash_judgment_status`
 4. If the verdict is `BLOCK`, stop execution
-
-## Example Files
-
-- [examples/mcp-demo/run-server.mjs](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/mcp-demo/run-server.mjs)
-- [examples/mcp-demo/README.md](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/mcp-demo/README.md)

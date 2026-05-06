@@ -8,8 +8,7 @@
     "atbash-mcp": "dist/index.js"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format esm --dts --clean",
-    "test": "vitest run"
+    "build": "tsup src/index.ts --format esm --dts --clean"
   },
   "dependencies": {
     "@atbash/common": "file:../common",

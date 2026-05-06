@@ -1,0 +1,14 @@
+{
+  "name": "atbash-langgraph-runtime-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node run.mjs"
+  },
+  "dependencies": {
+    "@atbash/langgraph": "^0.1.0",
+    "@atbash/sdk": "^0.3.6",
+    "@langchain/core": "^1.1.40",
+    "@langchain/langgraph": "^1.2.9"
+  }
+}

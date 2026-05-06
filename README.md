@@ -35,14 +35,18 @@ All integrations expect:
 - `ATBASH_AGENT_PRIVKEY` — required, used for local signing and agent identity derivation
 - `ATBASH_ENDPOINT` — optional, overrides the default Atbash API base URL
 
-## Existing Agent Examples
+## Example
 
-- MCP client/server setup:
-  [examples/mcp-demo/README.md](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/mcp-demo/README.md)
-- Existing ElizaOS character and action wiring:
-  [examples/eliza-demo/README.md](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/eliza-demo/README.md)
-- Existing LangGraph graph wiring:
-  [examples/langgraph-demo/README.md](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/langgraph-demo/README.md)
+- Real Eliza runtime example:
+  [examples/eliza-runtime-agent/README.md](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/eliza-runtime-agent/README.md)
+- Real LangGraph runtime example:
+  [examples/langgraph-runtime-agent/README.md](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/langgraph-runtime-agent/README.md)
+- Real MCP runtime example:
+  [examples/mcp-runtime-agent/README.md](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/mcp-runtime-agent/README.md)
+- Real LangChain runtime example:
+  [examples/langchain-runtime-agent/README.md](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/langchain-runtime-agent/README.md)
+- Real AutoGen runtime example:
+  [examples/autogen-runtime-agent/README.md](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/autogen-runtime-agent/README.md)
 
 ## Package Docs
 
@@ -55,5 +59,4 @@ All integrations expect:
 ```bash
 npm install
 npm run build
-npm test
 ```

@@ -25,7 +25,7 @@ const server = new McpServer({
 });
 
 registerJudgeTools(server, agent, endpoint);
-registerStatusTools(server, endpoint);
+registerStatusTools(server, agent.pubkey, endpoint);
 registerQueryTools(server, agent, endpoint);
 registerPolicyResource(server, agent, endpoint);
 registerSafetyPrompt(server);

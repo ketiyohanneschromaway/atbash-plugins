@@ -1,6 +1,6 @@
 import { judgeAction, type AgentAuth, type ClientOpts } from "@atbash/sdk";
 import { AIMessage, ToolMessage } from "@langchain/core/messages";
-import { interrupt } from "@langchain/langgraph";
+import { interrupt, isGraphBubbleUp } from "@langchain/langgraph";
 import type { AtbashState } from "../state.js";
 
 type ToolCall = {
@@ -94,6 +94,10 @@ export function createGuardNode(opts: GuardNodeOptions) {
         atbashConfidence: result.confidence,
       };
     } catch (error) {
+      if (isGraphBubbleUp(error)) {
+        throw error;
+      }
+
       const reason = error instanceof Error ? error.message : "Safety check failed";
       return {
         messages: toolCalls.map(
