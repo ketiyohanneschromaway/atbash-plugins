@@ -1,5 +1,15 @@
 # LangGraph Demo
 
+This folder shows how to add Atbash to an existing LangGraph app.
+
+## Existing Graph Wiring
+
+Use this example as the “drop into my current app” reference:
+
+- [existing-graph.ts](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/langgraph-demo/existing-graph.ts)
+
+## Runnable Demo
+
 The runnable demo graph is [app.mjs](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/langgraph-demo/app.mjs).
 
 ```bash

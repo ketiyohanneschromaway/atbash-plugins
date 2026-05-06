@@ -37,7 +37,7 @@ const callback = async (content) => {
 
 const result = await guardedTransfer(
   runtime,
-  { content: { text: "Transfer $50,000 to external wallet 0xabc" } },
+  { content: { text: "Transfer $2,500 to new external wallet 0xabc for vendor payment" } },
   undefined,
   undefined,
   callback,

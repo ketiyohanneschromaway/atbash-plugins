@@ -19,6 +19,6 @@
     "vitest": "^3.1.4"
   },
   "dependencies": {
-    "@atbash/sdk": "^0.3.6"
+    "@atbash/sdk": "file:atbash-sdk-0.3.6.tgz"
   }
 }
