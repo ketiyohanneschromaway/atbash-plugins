@@ -2,51 +2,86 @@
 
 Add Atbash to an ElizaOS agent.
 
-Use this when your agent already runs inside ElizaOS and you want safety checks around actions, policy context in runtime, and audit logging after execution.
+This package plugs into the Eliza runtime and gives you a safety service, a policy provider, an audit evaluator, and action-level guarding.
 
-## What This Plugin Adds
+## What It Is
+
+This is the Eliza-native Atbash integration.
+
+It is meant for agents that already run inside ElizaOS and want Atbash woven into normal runtime behavior.
+
+## When To Use It
+
+Use this package when:
+
+- your app is already an Eliza agent
+- you want sensitive Eliza actions to be gated by Atbash
+- you want current Atbash policy available in runtime context
+- you want post-action audit logging
+
+## What It Adds
 
 - `atbashPlugin`
-  Registers service, provider, evaluator, and explicit safety action.
-- `withAtbashGuard()`
-  Wraps sensitive actions so Atbash decides before execution.
+  Main plugin export. Registers service, provider, evaluator, and explicit judge action.
 - `AtbashService`
-  Loads agent identity from runtime settings.
+  Loads the agent identity and optional endpoint from runtime settings.
 - `ATBASH_JUDGE`
-  Explicit Eliza action for direct safety checks.
+  Explicit action that asks Atbash for a verdict.
+- `withAtbashGuard(handler)`
+  Wraps a sensitive action handler so Atbash judges before the real handler runs.
+- `policyProvider`
+  Exposes current policy and jail status in provider form.
+- `auditEvaluator`
+  Best-effort logging after action completion.
 
 ## Runtime Model
 
-Eliza loads plugin once at startup.
+At startup:
 
-Plugin then:
+1. Eliza loads the plugin
+2. `AtbashService` derives the Atbash agent from `ATBASH_AGENT_PRIVKEY`
+3. optional `ATBASH_ENDPOINT` is attached as client config
 
-1. derives agent pubkey from private key
-2. exposes policy context through provider
-3. lets actions call Atbash before executing
-4. logs completed actions through evaluator
+During runtime:
 
-## Basic Wiring
+1. provider can expose current safety status
+2. `ATBASH_JUDGE` can be called directly
+3. guarded actions call Atbash before they execute
+4. evaluator logs completed activity after execution
 
-Add plugin to your character:
+## Main Usage Patterns
 
-```ts
-import atbashPlugin from "@atbash/eliza-plugin";
+### 1. Register The Plugin
 
-export const character = {
-  name: "TreasuryBot",
-  bio: ["Treasury operations agent"],
-  plugins: [atbashPlugin],
-  settings: {
-    ATBASH_ENDPOINT: process.env.ATBASH_ENDPOINT,
-  },
-  secrets: {
-    ATBASH_AGENT_PRIVKEY: process.env.ATBASH_AGENT_PRIVKEY,
-  },
-};
-```
+Add `atbashPlugin` to the Eliza character or runtime plugin list so the service, provider, evaluator, and action are available.
 
-## Guarding A Sensitive Action
+### 2. Guard Sensitive Actions
+
+Use `withAtbashGuard()` on actions that create irreversible effects:
+
+- sending funds
+- creating approvals
+- changing permissions
+- touching production infrastructure
+
+Keep low-risk read-only actions unguarded.
+
+### 3. Use `ATBASH_JUDGE` For Explicit Checks
+
+Use this when you want the agent or runtime to request a decision directly before choosing a path.
+
+This action only asks for a verdict. It does not execute the real business action for you.
+
+## How To Use It Properly
+
+Good pattern:
+
+- wrap the real action closest to the side effect
+- keep action text specific and descriptive
+- use the provider to make the agent aware of the current policy
+- leave the evaluator enabled unless you intentionally do not want audit logging
+
+Example guarded action shape:
 
 ```ts
 import { withAtbashGuard } from "@atbash/eliza-plugin";
@@ -62,31 +97,28 @@ export const sendFundsAction = {
 };
 ```
 
-## Explicit Safety Check
+## Verdict Handling
 
-If you want agent or app to call Atbash directly, use `ATBASH_JUDGE`.
-
-Expected behavior:
-
-- returns `Verdict: ALLOW` on success path
-- returns held/block reason in callback text
-- does not execute your real action for you
-
-## What To Do With Verdicts
+### `withAtbashGuard()`
 
 - `ALLOW`
-  Proceed with original action handler.
+  Original action handler runs.
 - `HOLD`
-  Stop action and surface operator-review requirement.
+  Original action handler does not run. The wrapper returns a held result.
 - `BLOCK`
-  Stop action and surface policy reason.
+  Original action handler does not run. The wrapper returns a blocked result.
 
-## Recommended Pattern
+### `ATBASH_JUDGE`
 
-- wrap every irreversible action with `withAtbashGuard()`
-- keep low-risk informational actions unguarded
-- let `policyProvider` add safety context for planning
-- keep `auditEvaluator` enabled for post-action logging
+- returns a structured result in `data`
+- emits callback text that summarizes verdict, reason, and confidence
+- leaves the next step up to your runtime or agent logic
+
+## What This Package Does Not Do
+
+- It does not automatically discover which actions are risky. You choose what to guard.
+- It does not replace your business action implementation.
+- It does not create a human-review UI. It only surfaces hold/block information back into Eliza.
 
 ## Example
 

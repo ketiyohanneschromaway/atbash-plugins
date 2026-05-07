@@ -2,44 +2,47 @@
 
 Expose Atbash as an MCP server.
 
-Use this when your agent already knows how to call MCP tools. Your agent does not import Atbash directly. It connects to a separate MCP server process and calls Atbash tools over MCP.
+This package is for MCP hosts that want to call Atbash as tools instead of importing Atbash into the host process directly.
 
-## What This Plugin Adds
+## What It Is
 
-- pre-execution judgment
-- audit-only logging
-- agent registration check
-- policy lookup
-- org / agent / tool-call query tools
+`@atbash/mcp` starts a standalone MCP server process.
 
-## Runtime Model
+That server:
 
-Your MCP host calls tools like:
+- loads one Atbash agent identity from `ATBASH_AGENT_PRIVKEY`
+- exposes safety and query tools over MCP
+- returns structured Atbash results to the host
 
-1. `atbash_judge`
-2. your real sensitive tool, only if verdict is `ALLOW`
+Your MCP client or host remains the real decision-maker. This package does not execute your business tools for you.
 
-Typical flow:
+## When To Use It
 
-1. agent plans sensitive action
-2. MCP host calls `atbash_judge`
-3. handle result:
-   - `ALLOW`: continue
-   - `HOLD`: stop and wait for human review
-   - `BLOCK`: stop and surface reason
+Use this package when:
 
-## Main Tools
+- your host already supports MCP
+- you want one Atbash tool server to serve one or many MCP clients
+- you want Atbash checks without coupling your app directly to the SDK
+
+Do not use this package when:
+
+- you need deep framework lifecycle integration
+- you want Atbash to wrap in-process handlers automatically
+
+In those cases, use a framework-native package like Eliza or LangGraph instead.
+
+## What It Adds
+
+Safety tools:
 
 - `atbash_judge`
-  Main safety gate. Use before sensitive execution.
 - `atbash_log`
-  Audit-only logging without requesting verdict.
 - `atbash_check_agent`
-  Confirms this agent is registered.
+
+Read/query tools:
+
 - `atbash_get_policy`
-  Returns active policy and jail status.
 - `atbash_get_agent_detail`
-  Returns agent metadata.
 - `atbash_get_tool_calls`
 - `atbash_get_agent_tool_calls`
 - `atbash_get_org_tool_calls`
@@ -50,52 +53,100 @@ Typical flow:
 - `atbash_get_reviews`
 - `atbash_get_safety_stats`
 
-## Minimal MCP Usage
+Optional prompt helper:
 
-Point your MCP client at:
+- `atbash_safety_check`
 
-```text
-node packages/mcp/dist/index.js
-```
+## Runtime Model
 
-Then call:
+Normal flow:
+
+1. your host decides a sensitive action may happen
+2. host calls `atbash_judge`
+3. host inspects the returned verdict
+4. only on `ALLOW` does the host continue to the real tool
+
+So the Atbash MCP server sits in front of a sensitive operation, not inside it.
+
+## Main Tool Contracts
+
+### `atbash_judge`
+
+Use this before a sensitive side effect.
+
+Inputs:
+
+- `action`
+- `context`
+- optional `provider`
+- optional `model`
+- optional `tool_name`
+- optional `tool_args_json`
+
+Returns a result with fields such as:
+
+- `verdict`
+- `reason`
+- `confidence`
+- `tool_call_id`
+
+### `atbash_log`
+
+Use this when you want audit logging without a live allow/block/hold decision.
+
+### `atbash_check_agent`
+
+Use this for startup checks or debugging to confirm that the server agent is registered.
+
+### `atbash_get_policy`
+
+Use this when the host needs to display the current policy or jail status.
+
+## How To Use It Properly
+
+Recommended host pattern:
+
+1. describe the real action in plain language
+2. include useful business context
+3. include `tool_name` and `tool_args_json` when possible
+4. branch on verdict before any real side effect
+
+Better input gives better safety decisions.
+
+Weak:
 
 ```json
 {
-  "name": "atbash_judge",
-  "arguments": {
-    "action": "Bank transfer $25 to a new external vendor account",
-    "context": "Treasury payout review before execution",
-    "tool_name": "send_bank_transfer",
-    "tool_args_json": "{\"amount\":25,\"recipient\":\"new vendor\"}"
-  }
+  "action": "do payment",
+  "context": "finance"
 }
 ```
 
-Expected result shape:
+Better:
 
 ```json
 {
-  "verdict": "ALLOW | HOLD | BLOCK",
-  "reason": "...",
-  "confidence": 0.9,
-  "tool_call_id": "tc-..."
+  "action": "Bank transfer $25 to a new external vendor account",
+  "context": "Treasury payout review before execution",
+  "tool_name": "send_bank_transfer",
+  "tool_args_json": "{\"amount\":25,\"recipient\":\"new vendor\"}"
 }
 ```
 
-## What To Do With Verdicts
+## Verdict Handling
 
 - `ALLOW`
-  Execute your real tool.
+  Execute the real downstream tool.
 - `HOLD`
-  Do not execute yet. Show operator review state.
+  Do not execute. Surface review state and keep the `tool_call_id`.
 - `BLOCK`
-  Do not execute. Surface reason to user or agent.
+  Do not execute. Return or display the policy reason.
 
-## Notes
+## Current Notes
 
-- This package is best when Atbash should be available to many different MCP clients from one server process.
-- Query tools are read-only and useful for dashboards, support flows, and ops tooling.
+- The tool surface is the stable path in this package.
+- The policy resource path is intentionally disabled right now because MCP resource registration behavior is inconsistent across SDK versions.
+- Query tools are read-only and useful for ops dashboards, review UIs, and support tooling.
 
 ## Example
 

@@ -1,68 +1,70 @@
 # `@atbash/langgraph`
 
-Add Atbash as a guard node inside a LangGraph workflow.
+Add Atbash as a guard stage inside a LangGraph workflow.
 
-Use this when your agent already has a graph with an `agent` step and a `tools` step, and you want Atbash to decide before tool execution.
+This package is for graph-based agents that already separate planning from tool execution.
 
-## What This Plugin Adds
+## What It Is
+
+This is the LangGraph-native integration.
+
+It adds a safety node before tools run and an audit node after tool execution completes.
+
+## When To Use It
+
+Use this package when:
+
+- your app already uses LangGraph
+- your graph already has a distinct `agent` phase and `tools` phase
+- you want `HOLD` to pause execution using LangGraph interrupt semantics
+- you want audit logging after the tool phase
+
+## What It Adds
 
 - `AtbashStateAnnotation`
-  LangGraph state with Atbash verdict fields.
+  State shape with Atbash fields such as verdict, reason, confidence, and tool call id.
 - `createGuardNode()`
   Calls Atbash before tool execution.
 - `createAuditNode()`
-  Logs post-tool output.
+  Best-effort logging after tool execution.
 - `addAtbashSafety()`
-  Wires guard and audit nodes into an existing graph.
+  Convenience wiring for the common guard-and-audit pattern.
 - `createJudgeTool()`
-  Optional advisory tool for direct LLM/tool use.
+  Optional advisory tool for direct LLM access.
 
 ## Runtime Model
 
-Recommended flow:
+Normal flow:
 
-1. `agent` node proposes tool calls
+1. `agent` proposes one or more tool calls
 2. graph routes to `atbash_guard`
-3. verdict:
-   - `ALLOW` → `tools`
-   - `HOLD` → graph interrupt
-   - `BLOCK` → return control with block context
-4. `atbash_audit` logs after real tool execution
+3. Atbash returns a verdict
+4. on `ALLOW`, graph continues to `tools`
+5. on `HOLD`, graph interrupts and waits for operator input
+6. on `BLOCK`, tool execution is prevented
+7. after `tools`, `atbash_audit` logs the completed action
 
-## Basic Wiring
+## Important Assumption
 
-```ts
-import { StateGraph, START, END, MemorySaver } from "@langchain/langgraph";
-import { AtbashStateAnnotation, addAtbashSafety } from "@atbash/langgraph";
+`addAtbashSafety()` is a convenience helper for the common graph layout used in this repo.
 
-const builder = new StateGraph(AtbashStateAnnotation)
-  .addNode("agent", agentNode)
-  .addNode("tools", toolsNode)
-  .addEdge(START, "agent")
-  .addConditionalEdges("agent", (state) => {
-    const hasToolCalls = state.messages.at(-1)?.tool_calls?.length;
-    return hasToolCalls ? "atbash_guard" : END;
-  });
+It assumes:
 
-addAtbashSafety(builder, {
-  privkey: process.env.ATBASH_AGENT_PRIVKEY,
-  endpoint: process.env.ATBASH_ENDPOINT,
-});
+- a node named `agent`
+- a node named `tools`
+- tool execution should flow back to `agent` after `atbash_audit`
 
-const app = builder.compile({
-  checkpointer: new MemorySaver(),
-});
-```
+If your graph shape differs, use `createGuardNode()` and `createAuditNode()` directly and wire them yourself.
 
 ## HOLD Behavior
 
-This package uses native LangGraph interrupt flow.
+This package uses real LangGraph interrupts.
 
 On `HOLD`:
 
 - graph pauses
 - interrupt payload includes `tool_call_id`, reason, action, confidence
-- your app resumes with operator decision
+- your app decides whether to resume
 
 Resume pattern:
 
@@ -72,20 +74,31 @@ import { Command } from "@langchain/langgraph";
 await app.invoke(new Command({ resume: "approve" }), config);
 ```
 
-## What To Do With Verdicts
+If the operator does not approve, the guard node returns a blocked tool response back into graph state.
+
+## How To Use It Properly
+
+Best results come when:
+
+- tool names clearly describe what will happen
+- tool arguments are specific and human-readable
+- you use a checkpointer if human review may happen later
+- you guard the tool phase, not just the model-output phase
+
+## Verdict Handling
 
 - `ALLOW`
-  Let graph continue to tools.
+  Continue to the tools node.
 - `HOLD`
-  Pause graph and resume only after operator decision.
+  Pause graph and wait for operator decision.
 - `BLOCK`
-  Keep tool from running and return block context to agent.
+  Return block context and do not run the tool.
 
-## Recommended Pattern
+## What This Package Does Not Do
 
-- use this for workflows where tool execution is already graph-controlled
-- persist state with a checkpointer if you want durable human review
-- keep tool names and arguments descriptive so Atbash sees useful action text
+- It does not invent your graph structure.
+- It does not automatically find your tool node if you use a custom layout.
+- It does not execute operator review by itself. It only exposes pause/resume mechanics.
 
 ## Example
 

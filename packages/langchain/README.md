@@ -2,26 +2,54 @@
 
 Guard LangChain tools with Atbash.
 
-Use this when you already have `DynamicStructuredTool` instances and want a lightweight wrapper that checks Atbash before the tool executes.
+This package is the smallest in-process integration in the repo. It wraps a `DynamicStructuredTool` and adds a safety check before the tool runs.
 
-## What This Plugin Adds
+## What It Is
+
+This is a lightweight tool wrapper, not a full framework plugin.
+
+You keep your existing LangChain flow. This package only guards the tool boundary.
+
+## When To Use It
+
+Use this package when:
+
+- you already use `DynamicStructuredTool`
+- you want minimal ceremony
+- you only need Atbash directly around a tool execution step
+
+Do not use this package when:
+
+- you need human-review pause and resume semantics at the graph level
+- you want a framework-native plugin lifecycle
+
+In those cases, LangGraph or Eliza is usually a better fit.
+
+## What It Adds
 
 - `withAtbashGuard(tool, agent, options)`
 
-This mutates a `DynamicStructuredTool` in place by replacing its `func` with a guarded version.
+This mutates the passed tool in place by replacing its `func` with a guarded wrapper.
 
 ## Runtime Model
 
-When guarded tool is invoked:
+When the tool is invoked:
 
-1. wrapper serializes tool arguments
-2. wrapper sends action + tool description to Atbash
-3. verdict:
-   - `ALLOW` → original tool runs
-   - `HOLD` → wrapper throws with `tool_call_id`
-   - `BLOCK` → wrapper throws with block reason
+1. tool input is serialized
+2. wrapper sends an action description and context to Atbash
+3. Atbash returns a verdict
+4. wrapper either runs the original tool or throws
 
-## Basic Wiring
+## How To Use It Properly
+
+Best results come when:
+
+- tool name clearly reflects the real side effect
+- tool description explains intent, not just implementation
+- tool arguments are meaningful and specific
+- caller wraps invocation in `try/catch`
+
+Example:
 
 ```ts
 import { loadAgent } from "@atbash/sdk";
@@ -47,25 +75,31 @@ withAtbashGuard(tool, agent, {
 });
 ```
 
-## What To Do With Verdicts
+## Verdict Handling
 
-This package signals non-allow results by throwing:
+This package signals non-allow outcomes by throwing errors.
 
 - `ALLOW`
-  Normal tool result returns.
+  Original tool result returns normally.
 - `HOLD`
-  Error message includes `tool_call_id`.
+  Wrapper throws an error message that includes `tool_call_id`.
 - `BLOCK`
-  Error message is policy reason.
+  Wrapper throws an error message containing the policy reason.
 
-So caller should wrap tool invocation in `try/catch`.
+That means the caller should interpret exceptions deliberately, not treat them all as generic tool crashes.
 
-## Recommended Pattern
+## Recommended Caller Pattern
 
-- use tool descriptions that clearly explain intent
-- include meaningful argument names and values
-- catch `HOLD` separately if you want operator-review UI
-- keep this wrapper at tool boundary, not deep inside business logic
+- catch the thrown error
+- if message contains hold semantics, move into review flow
+- if message contains block semantics, surface policy reason
+- only retry if your app intentionally wants to present a changed action for review
+
+## What This Package Does Not Do
+
+- It does not manage a queue or review workflow.
+- It does not pause and resume execution like LangGraph.
+- It does not guard arbitrary business code unless that code is behind a wrapped tool.
 
 ## Example
 
