@@ -91,4 +91,4 @@ That is intentional. The host loop stays in control.
 
 ## Example
 
-- [examples/autogen-runtime-agent/README.md](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/autogen-runtime-agent/README.md)
+- [AutoGen Runtime Example](../../examples/autogen-runtime-agent/README.md)

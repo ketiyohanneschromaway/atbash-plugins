@@ -64,19 +64,19 @@ This is not an agent by itself. It is an MCP server that exposes Atbash capabili
 
 ## Docs By Package
 
-- [MCP Plugin Docs](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/packages/mcp/README.md)
-- [Eliza Plugin Docs](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/packages/eliza/README.md)
-- [LangGraph Plugin Docs](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/packages/langgraph/README.md)
-- [LangChain Plugin Docs](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/packages/langchain/README.md)
-- [AutoGen Plugin Docs](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/packages/autogen/README.md)
+- [MCP Plugin Docs](packages/mcp/README.md)
+- [Eliza Plugin Docs](packages/eliza/README.md)
+- [LangGraph Plugin Docs](packages/langgraph/README.md)
+- [LangChain Plugin Docs](packages/langchain/README.md)
+- [AutoGen Plugin Docs](packages/autogen/README.md)
 
 ## Runtime Examples
 
-- [MCP Runtime Example](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/mcp-runtime-agent/README.md)
-- [Eliza Runtime Example](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/eliza-runtime-agent/README.md)
-- [LangGraph Runtime Example](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/langgraph-runtime-agent/README.md)
-- [LangChain Runtime Example](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/langchain-runtime-agent/README.md)
-- [AutoGen Runtime Example](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/autogen-runtime-agent/README.md)
+- [MCP Runtime Example](examples/mcp-runtime-agent/README.md)
+- [Eliza Runtime Example](examples/eliza-runtime-agent/README.md)
+- [LangGraph Runtime Example](examples/langgraph-runtime-agent/README.md)
+- [LangChain Runtime Example](examples/langchain-runtime-agent/README.md)
+- [AutoGen Runtime Example](examples/autogen-runtime-agent/README.md)
 
 ## Quick Guidance
 

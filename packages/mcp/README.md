@@ -150,4 +150,4 @@ Better:
 
 ## Example
 
-- [examples/mcp-runtime-agent/README.md](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/mcp-runtime-agent/README.md)
+- [MCP Runtime Example](../../examples/mcp-runtime-agent/README.md)

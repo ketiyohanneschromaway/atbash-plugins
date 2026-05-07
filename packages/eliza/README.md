@@ -122,4 +122,4 @@ export const sendFundsAction = {
 
 ## Example
 
-- [examples/eliza-runtime-agent/README.md](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/eliza-runtime-agent/README.md)
+- [Eliza Runtime Example](../../examples/eliza-runtime-agent/README.md)

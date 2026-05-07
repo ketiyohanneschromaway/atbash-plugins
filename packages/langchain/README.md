@@ -103,4 +103,4 @@ That means the caller should interpret exceptions deliberately, not treat them a
 
 ## Example
 
-- [examples/langchain-runtime-agent/README.md](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/langchain-runtime-agent/README.md)
+- [LangChain Runtime Example](../../examples/langchain-runtime-agent/README.md)

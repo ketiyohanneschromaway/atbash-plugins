@@ -102,4 +102,4 @@ Best results come when:
 
 ## Example
 
-- [examples/langgraph-runtime-agent/README.md](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/langgraph-runtime-agent/README.md)
+- [LangGraph Runtime Example](../../examples/langgraph-runtime-agent/README.md)
