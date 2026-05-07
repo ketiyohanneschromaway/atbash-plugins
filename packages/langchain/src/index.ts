@@ -1,13 +1,6 @@
 import { judgeAction, type AgentAuth, type JudgeOptions, type JudgeResult } from "@atbash/sdk";
+import { safeErrorMessage } from "@atbash/common";
 import type { DynamicStructuredTool } from "@langchain/core/tools";
-
-function safeStringify(value: unknown): string {
-  try {
-    return JSON.stringify(value);
-  } catch {
-    return String(value);
-  }
-}
 
 /**
  * Wraps a LangChain `DynamicStructuredTool` so every invocation is first judged by Atbash.
@@ -26,25 +19,31 @@ export function withAtbashGuard(
   const originalFunc = tool.func.bind(tool);
 
   tool.func = (async (input: unknown, ...rest: unknown[]) => {
-    const argsJson = safeStringify(input);
-    
-    // 1. Clearer descriptions for the Atbash judge
+    let argsJson: string;
+    try {
+      argsJson = JSON.stringify(input);
+    } catch {
+      argsJson = String(input);
+    }
+
     const actionDesc = `Calling tool '${tool.name}' with arguments: ${argsJson}`;
-    const context = tool.description; // Use the tool's actual description as the context!
+    const context = tool.description;
 
     const result = (await judgeAction(
       actionDesc,
       context,
       agent as AgentAuth,
-      options as JudgeOptions | undefined,
+      {
+        ...(options as JudgeOptions | undefined),
+        toolName: tool.name,
+        toolArgsJson: argsJson,
+      },
     )) as JudgeResult & { error?: string };
 
-    // 2. Catch Atbash API errors directly
     if (result.error) {
-      throw new Error(`Atbash API Error: ${result.error}`);
+      throw new Error(`Atbash API Error: ${safeErrorMessage(result.error)}`);
     }
 
-    // 3. Enforce the verdict
     switch (result.verdict) {
       case "ALLOW":
         return await (originalFunc as any)(input, ...rest);
@@ -63,4 +62,3 @@ export function withAtbashGuard(
 
   return tool;
 }
-
