@@ -64,19 +64,19 @@ This is not an agent by itself. It is an MCP server that exposes Atbash capabili
 
 ## Docs By Package
 
-- [packages/mcp/README.md](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/packages/mcp/README.md)
-- [packages/eliza/README.md](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/packages/eliza/README.md)
-- [packages/langgraph/README.md](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/packages/langgraph/README.md)
-- [packages/langchain/README.md](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/packages/langchain/README.md)
-- [packages/autogen/README.md](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/packages/autogen/README.md)
+- [MCP Plugin Docs](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/packages/mcp/README.md)
+- [Eliza Plugin Docs](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/packages/eliza/README.md)
+- [LangGraph Plugin Docs](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/packages/langgraph/README.md)
+- [LangChain Plugin Docs](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/packages/langchain/README.md)
+- [AutoGen Plugin Docs](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/packages/autogen/README.md)
 
 ## Runtime Examples
 
-- [examples/mcp-runtime-agent/README.md](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/mcp-runtime-agent/README.md)
-- [examples/eliza-runtime-agent/README.md](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/eliza-runtime-agent/README.md)
-- [examples/langgraph-runtime-agent/README.md](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/langgraph-runtime-agent/README.md)
-- [examples/langchain-runtime-agent/README.md](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/langchain-runtime-agent/README.md)
-- [examples/autogen-runtime-agent/README.md](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/autogen-runtime-agent/README.md)
+- [MCP Runtime Example](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/mcp-runtime-agent/README.md)
+- [Eliza Runtime Example](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/eliza-runtime-agent/README.md)
+- [LangGraph Runtime Example](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/langgraph-runtime-agent/README.md)
+- [LangChain Runtime Example](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/langchain-runtime-agent/README.md)
+- [AutoGen Runtime Example](/Users/ketiyohannes/Documents/development/work/Chromaway/atbash-plugins/examples/autogen-runtime-agent/README.md)
 
 ## Quick Guidance
 
