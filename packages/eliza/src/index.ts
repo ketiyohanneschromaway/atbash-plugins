@@ -1,19 +1,10 @@
+import type { Plugin } from "@elizaos/core";
 import { atbashJudgeAction, withAtbashGuard } from "./actions/judgeAction.js";
 import { auditEvaluator } from "./evaluators/auditEvaluator.js";
 import { policyProvider } from "./providers/policyProvider.js";
 import { AtbashService } from "./services/atbashService.js";
 
-type AtbashPlugin = {
-  name: string;
-  description: string;
-  services: unknown[];
-  actions: unknown[];
-  providers: unknown[];
-  evaluators: unknown[];
-  config: Record<string, { required: boolean; description: string }>;
-};
-
-export const atbashPlugin: AtbashPlugin = {
+export const atbashPlugin: Plugin = {
   name: "@atbash/eliza-plugin",
   description: "Atbash safety layer for ElizaOS agents",
   services: [AtbashService],
