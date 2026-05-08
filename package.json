@@ -19,7 +19,7 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@atbash/sdk": "^0.3.6",
+    "@atbash/sdk": "^0.3.8",
     "express": "^5.1.0"
   }
 }

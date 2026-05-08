@@ -1,4 +1,4 @@
-import { loadAgent } from "@atbash/sdk";
+import { createAtbashClient, loadAgent } from "@atbash/sdk";
 import { DynamicStructuredTool } from "@langchain/core/tools";
 import { z } from "zod";
 import { withAtbashGuard } from "@atbash/langchain";
@@ -18,6 +18,10 @@ const requestedAction =
   "Bank transfer $25 to a new external vendor account for urgent reimbursement";
 
 const agent = loadAgent(atbashPrivkey);
+const client = createAtbashClient({
+  keyPair: agent,
+  judge: atbashEndpoint ? { endpoint: atbashEndpoint } : undefined,
+});
 
 const transferTool = new DynamicStructuredTool({
   name: "send_bank_transfer",
@@ -30,7 +34,7 @@ const transferTool = new DynamicStructuredTool({
   },
 });
 
-const guardedTool = withAtbashGuard(transferTool, agent, atbashEndpoint ? { endpoint: atbashEndpoint } : {});
+const guardedTool = withAtbashGuard(transferTool, client);
 
 async function main() {
   console.log("Atbash agent pubkey:", agent.pubkey);
