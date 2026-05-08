@@ -1,4 +1,10 @@
-import { loadAgent, type AgentAuth, type ClientOpts } from "@atbash/sdk";
+import {
+  createAtbashClient,
+  loadAgent,
+  type AgentAuth,
+  type AtbashClient,
+  type ClientOpts,
+} from "@atbash/sdk";
 import { StateGraph } from "@langchain/langgraph";
 import { createAuditNode } from "./nodes/auditNode.js";
 import { createGuardNode } from "./nodes/guardNode.js";
@@ -15,15 +21,26 @@ export function addAtbashSafety(
   opts: AtbashSafetyOptions,
 ) {
   const privkey = opts.privkey ?? process.env.ATBASH_AGENT_PRIVKEY;
-  const agent = opts.agent ?? loadAgent(privkey ?? "");
+  const agent: AgentAuth = opts.agent ?? loadAgent(privkey ?? "");
   const clientOpts: ClientOpts | undefined = opts.endpoint ? { endpoint: opts.endpoint } : undefined;
+
+  // Construct a single AtbashClient for the guard node — gives the
+  // graph secret redaction, endpoint validation, and a normalised
+  // Decision shape on every invocation. The audit node still uses the
+  // lower-level logToolCall (it's a fire-and-forget post-execution
+  // record, not a verdict request) and so keeps the agent + clientOpts.
+  const client: AtbashClient = createAtbashClient({
+    keyPair: { privKey: agent.privkey, pubKey: agent.pubkey },
+    judge: opts.endpoint ? { endpoint: opts.endpoint } : undefined,
+  });
+
   const graph = builder as {
     addNode: (name: string, node: unknown) => unknown;
     addConditionalEdges: (name: string, route: (state: AtbashState) => string) => unknown;
     addEdge: (from: string, to: string) => unknown;
   };
 
-  graph.addNode("atbash_guard", createGuardNode({ agent, clientOpts }));
+  graph.addNode("atbash_guard", createGuardNode({ client }));
   graph.addNode("atbash_audit", createAuditNode({ agent, clientOpts }));
 
   graph.addConditionalEdges("atbash_guard", (state: AtbashState) => {
