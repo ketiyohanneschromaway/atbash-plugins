@@ -1,5 +1,9 @@
-import type { AgentAuth } from "@atbash/sdk";
-import { checkAgentExists, judgeAction, logToolCall } from "@atbash/sdk";
+import {
+  checkAgentExists,
+  createAtbashClient,
+  logToolCall,
+  type AgentAuth,
+} from "@atbash/sdk";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { createClientOpts, toErrorContent, toJsonContent } from "@atbash/common";
@@ -11,33 +15,40 @@ export function registerJudgeTools(
 ) {
   const opts = createClientOpts(endpoint);
 
+  // Construct an AtbashClient once at startup. The atbash_judge tool
+  // uses it for verdicts (so it inherits secret redaction, endpoint
+  // validation, fail-closed defaults, normalised Decision shape, and
+  // AUDIT-tier handling). atbash_log and atbash_check_agent stay on
+  // the lower-level functions because they aren't verdict requests.
+  const client = createAtbashClient({
+    keyPair: { privKey: agent.privkey, pubKey: agent.pubkey },
+    judge: endpoint ? { endpoint } : undefined,
+  });
+
   server.registerTool(
     "atbash_judge",
     {
       description:
-        "Submit an action for safety judgment before executing it. Returns ALLOW, HOLD, BLOCK, or audit-mode No verdict.",
+        "Submit an action for safety judgment before executing it. Returns ALLOW, HOLD, BLOCK, or ERROR.",
       inputSchema: z.object({
         action: z.string().describe("Plain text description of the action to judge"),
         context: z.string().describe("Why this action is being taken"),
-        provider: z
-          .enum(["atbash", "openai", "google", "microsoft", "custom"])
-          .optional()
-          .describe("Provider override"),
-        model: z.string().optional().describe("Model override"),
         tool_name: z.string().optional().describe("Name of the tool being called"),
         tool_args_json: z.string().optional().describe("JSON string of tool arguments"),
       }),
     },
-    async ({ action, context, provider, model, tool_name, tool_args_json }) => {
+    async ({ action, context, tool_name, tool_args_json }) => {
       try {
-        const result = await judgeAction(action, context, agent, {
-          ...opts,
-          provider,
-          model,
-          toolName: tool_name,
-          toolArgsJson: tool_args_json,
+        let parsedArgs: unknown = undefined;
+        if (tool_args_json) {
+          try { parsedArgs = JSON.parse(tool_args_json); } catch { parsedArgs = tool_args_json; }
+        }
+        const decision = await client.auditToolCall({
+          toolName: tool_name ?? "mcp_judge",
+          args: parsedArgs ?? {},
+          context: `${action} — ${context}`,
         });
-        return toJsonContent(result);
+        return toJsonContent(decision);
       } catch (error) {
         return toErrorContent(error);
       }
