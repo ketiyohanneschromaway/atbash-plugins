@@ -216,7 +216,7 @@ declare module "@atbash/sdk" {
     nodeUrls?: string[];
     blockchainRid?: string;
     keyPath?: string;
-    keyPair?: AgentAuth;
+    keyPair?: { privKey: string; pubKey: string };
     failClosed?: boolean;
     logger?: { info?: (...args: unknown[]) => void; warn?: (...args: unknown[]) => void };
   }
