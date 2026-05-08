@@ -1,6 +1,11 @@
+import { fileURLToPath } from "url";
+import { dirname, resolve } from "path";
 import { loadAgent } from "@atbash/sdk";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const mcpServerPath = resolve(__dirname, "../../packages/mcp/dist/index.js");
 
 function requireEnv(name) {
   const value = process.env[name];
@@ -20,8 +25,7 @@ const agent = loadAgent(atbashPrivkey);
 
 const transport = new StdioClientTransport({
   command: "node",
-  args: ["packages/mcp/dist/index.js"],
-  cwd: process.cwd(),
+  args: [mcpServerPath],
   stderr: "inherit",
   env: {
     ...process.env,
