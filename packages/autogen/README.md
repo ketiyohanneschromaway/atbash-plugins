@@ -45,6 +45,16 @@ Typical flow:
 
 Send the same kind of detail you would want a human reviewer to see.
 
+First create the SDK client once at startup, then call `judgeForAutoGen` per request.
+
+```ts
+import { createAtbashClient, loadAgent } from "@atbash/sdk";
+import { judgeForAutoGen } from "@atbash/autogen";
+
+const agent = loadAgent(process.env.ATBASH_AGENT_PRIVKEY);
+const client = createAtbashClient({ keyPair: agent });
+```
+
 Weak:
 
 ```ts
@@ -53,7 +63,7 @@ await judgeForAutoGen(
     action: "Do the transfer",
     context: "Finance task",
   },
-  agent,
+  client,
 );
 ```
 
@@ -67,10 +77,16 @@ await judgeForAutoGen(
     toolName: "send_bank_transfer",
     toolArgs: { amount: 25, recipient: "new vendor" },
   },
-  agent,
-  { endpoint: process.env.ATBASH_ENDPOINT },
+  client,
 );
 ```
+
+The endpoint, fail-closed posture, and chain settings all live on the
+`client` you constructed up front — there are no per-call options.
+
+The result is a `Decision` with the shape
+`{ allow, verdict, reason?, toolCallId? }`. `verdict` is one of
+`"ALLOW" | "HOLD" | "BLOCK" | "ERROR"`.
 
 ## Verdict Handling
 

@@ -6,7 +6,7 @@
     "start": "node run.mjs"
   },
   "dependencies": {
-    "@atbash/autogen": "^0.1.0",
-    "@atbash/sdk": "^0.3.6"
+    "@atbash/autogen": "^0.2.0",
+    "@atbash/sdk": "^0.3.8"
   }
 }
