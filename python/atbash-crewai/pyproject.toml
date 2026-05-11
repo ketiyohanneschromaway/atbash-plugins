@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "atbash-crewai"
+version = "0.1.0"
+description = "CrewAI tool guardrail decorator powered by the native atbash-sdk (Python)."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "crewai",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
