@@ -45,7 +45,7 @@ export function registerJudgeTools(
         }
         const decision = await client.auditToolCall({
           toolName: tool_name ?? "mcp_judge",
-          args: parsedArgs ?? {},
+          args: parsedArgs ?? { action },
           context: `${action} — ${context}`,
         });
         const normalized = decision.verdict === "HOLD"
