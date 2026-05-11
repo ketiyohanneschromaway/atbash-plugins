@@ -1,6 +1,6 @@
 {
   "name": "@atbash/eliza-plugin",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@atbash/common": "file:../common",
-    "@atbash/sdk": "^0.3.6"
+    "@atbash/sdk": "^0.3.8"
   },
   "peerDependencies": {
     "@elizaos/core": ">=0.2.0"

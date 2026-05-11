@@ -1,4 +1,3 @@
-import { judgeAction as sdkJudgeAction } from "@atbash/sdk";
 import {
   type Action,
   type HandlerCallback,
@@ -27,21 +26,20 @@ export const atbashJudgeAction: Action = {
 
     try {
       const service = runtime.getService("atbash") as AtbashService;
-      const result = await sdkJudgeAction(
-        message.content?.text ?? "",
-        `ElizaOS agent action: ${message.content?.text ?? ""}`,
-        service.getAgent(),
-        service.getClientOpts(),
-      );
+      const decision = await service.getClient().auditToolCall({
+        toolName: "elizaos_judge",
+        args: { text: message.content?.text ?? "" },
+        context: `ElizaOS agent action: ${message.content?.text ?? ""}`,
+      });
 
       callback?.({
-        text: `Safety verdict: ${result.verdict}\nReason: ${result.reason}\nConfidence: ${result.confidence}`,
+        text: `Safety verdict: ${decision.verdict}\nReason: ${decision.reason ?? "no reason"}`,
       });
 
       return {
-        success: true,
-        data: result,
-        text: `Verdict: ${result.verdict}`,
+        success: decision.verdict !== "ERROR",
+        data: decision,
+        text: `Verdict: ${decision.verdict}`,
       };
     } catch (error) {
       const text = error instanceof Error ? error.message : "Safety check failed";
@@ -65,31 +63,31 @@ export function withAtbashGuard(handler: Action["handler"]): Action["handler"] {
     try {
       const service = runtime.getService("atbash") as AtbashService;
       const actionText = message.content?.text ?? "";
-      const result = await sdkJudgeAction(
-        actionText,
-        `ElizaOS guarded action: ${actionText}`,
-        service.getAgent(),
-        service.getClientOpts(),
-      );
+      const decision = await service.getClient().auditToolCall({
+        toolName: "elizaos_action",
+        args: { text: actionText },
+        context: `ElizaOS guarded action: ${actionText}`,
+      });
 
-      switch (result.verdict) {
+      switch (decision.verdict) {
         case "ALLOW":
-          return handler?.(runtime, message, state, options, callback);
         case "HOLD":
-          callback?.({
-            text: `Action held for operator review.\nReason: ${result.reason}\nTool call ID: ${result.tool_call_id}`,
-          });
-          return { success: false, text: `Held: ${result.reason}` };
+          return handler?.(runtime, message, state, options, callback);
         case "BLOCK":
           callback?.({
-            text: `Action blocked by safety policy.\nReason: ${result.reason}`,
+            text: `Action blocked by safety policy.\nReason: ${decision.reason ?? "no reason"}`,
           });
-          return { success: false, text: `Blocked: ${result.reason}` };
+          return { success: false, text: `Blocked: ${decision.reason ?? "no reason"}` };
+        case "ERROR":
+          callback?.({
+            text: `Atbash safety check error: ${decision.reason ?? "unknown error"}`,
+          });
+          return { success: false, text: `Error: ${decision.reason ?? "unknown error"}` };
         default:
           callback?.({
-            text: `Unexpected verdict from Atbash (${result.verdict}). Holding action for safety.`,
+            text: `Unexpected verdict from Atbash (${String(decision.verdict)}). Holding action for safety.`,
           });
-          return { success: false, text: `Unexpected verdict: ${result.verdict}` };
+          return { success: false, text: `Unexpected verdict: ${String(decision.verdict)}` };
       }
     } catch (error) {
       const text = error instanceof Error ? error.message : "Safety gate failed";
