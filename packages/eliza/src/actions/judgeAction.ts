@@ -71,12 +71,8 @@ export function withAtbashGuard(handler: Action["handler"]): Action["handler"] {
 
       switch (decision.verdict) {
         case "ALLOW":
-          return handler?.(runtime, message, state, options, callback);
         case "HOLD":
-          callback?.({
-            text: `Action held for operator review.\nReason: ${decision.reason ?? "no reason"}\nTool call ID: ${decision.toolCallId ?? "unknown"}`,
-          });
-          return { success: false, text: `Held: ${decision.reason ?? "no reason"}` };
+          return handler?.(runtime, message, state, options, callback);
         case "BLOCK":
           callback?.({
             text: `Action blocked by safety policy.\nReason: ${decision.reason ?? "no reason"}`,
