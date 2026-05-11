@@ -1,5 +1,4 @@
-import { judgeAction, type AgentAuth, type JudgeOptions, type JudgeResult } from "@atbash/sdk";
-import { safeErrorMessage } from "@atbash/common";
+import type { AtbashClient } from "@atbash/sdk";
 import type { DynamicStructuredTool } from "@langchain/core/tools";
 
 /**
@@ -7,56 +6,39 @@ import type { DynamicStructuredTool } from "@langchain/core/tools";
  *
  * This mutates `tool.func` in-place (preserving the same tool instance).
  *
- * - **ALLOW**: executes the original tool `func`
+ * - **ALLOW / HOLD**: executes the original tool `func` (HOLD treated as ALLOW)
  * - **BLOCK**: throws an Error with the block reason
- * - **HOLD**: throws an Error whose message contains the `tool_call_id`
+ *
+ * Construct the `AtbashClient` once at startup and reuse it for every
+ * tool you wrap — the client caches the agent identity and signing
+ * context, applies secret redaction before signing, validates the
+ * judge endpoint, and normalises verdicts.
  */
 export function withAtbashGuard(
   tool: DynamicStructuredTool,
-  agent: any,
-  options: any,
+  client: AtbashClient,
 ): DynamicStructuredTool {
   const originalFunc = tool.func.bind(tool);
 
   tool.func = (async (input: unknown, ...rest: unknown[]) => {
-    let argsJson: string;
-    try {
-      argsJson = JSON.stringify(input);
-    } catch {
-      argsJson = String(input);
-    }
+    const decision = await client.auditToolCall({
+      toolName: tool.name,
+      args: input,
+      context: tool.description,
+    });
 
-    const actionDesc = `Calling tool '${tool.name}' with arguments: ${argsJson}`;
-    const context = tool.description;
-
-    const result = (await judgeAction(
-      actionDesc,
-      context,
-      agent as AgentAuth,
-      {
-        ...(options as JudgeOptions | undefined),
-        toolName: tool.name,
-        toolArgsJson: argsJson,
-      },
-    )) as JudgeResult & { error?: string };
-
-    if (result.error) {
-      throw new Error(`Atbash API Error: ${safeErrorMessage(result.error)}`);
-    }
-
-    switch (result.verdict) {
+    switch (decision.verdict) {
       case "ALLOW":
+      case "HOLD":
         return await (originalFunc as any)(input, ...rest);
       case "BLOCK": {
-        const reason = result.reason || "Blocked by Atbash policy";
+        const reason = decision.reason || "Blocked by Atbash policy";
         throw new Error(reason);
       }
-      case "HOLD": {
-        const toolCallId = result.tool_call_id || "missing_tool_call_id";
-        throw new Error(`Execution Held: Operator must review tool_call_id: ${toolCallId}`);
-      }
+      case "ERROR":
+        throw new Error(`Atbash API Error: ${decision.reason ?? "unknown"}`);
       default:
-        throw new Error(`Unexpected Atbash verdict: ${String(result.verdict)} (Reason: ${result.reason})`);
+        throw new Error(`Unexpected Atbash verdict: ${String(decision.verdict)} (Reason: ${decision.reason ?? "no reason"})`);
     }
   }) as any;
 
