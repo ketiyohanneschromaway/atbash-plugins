@@ -1,6 +1,6 @@
 import type { AtbashClient } from "@atbash/sdk";
 import { AIMessage, ToolMessage } from "@langchain/core/messages";
-import { interrupt, isGraphBubbleUp } from "@langchain/langgraph";
+import { isGraphBubbleUp } from "@langchain/langgraph";
 import type { AtbashState } from "../state.js";
 
 type ToolCall = {
@@ -35,39 +35,6 @@ export function createGuardNode(opts: GuardNodeOptions) {
         args: toolCalls,
         context: `LangGraph agent attempting: ${actionText}`,
       });
-
-      if (decision.verdict === "HOLD") {
-        const operatorDecision = interrupt({
-          type: "atbash_hold",
-          tool_call_id: decision.toolCallId,
-          reason: decision.reason,
-          action: actionText,
-          confidence: null,
-        });
-
-        if (operatorDecision === "approve" || operatorDecision === "ALLOW") {
-          return {
-            atbashVerdict: "ALLOW",
-            atbashReason: "Approved by operator",
-            atbashToolCallId: decision.toolCallId,
-            atbashConfidence: null,
-          };
-        }
-
-        return {
-          messages: toolCalls.map(
-            (toolCall) =>
-              new ToolMessage({
-                tool_call_id: toolCall.id,
-                content: `Action rejected by operator: ${String(operatorDecision ?? "no reason given")}`,
-              }),
-          ),
-          atbashVerdict: "BLOCK",
-          atbashReason: `Rejected by operator: ${String(operatorDecision ?? "unknown")}`,
-          atbashToolCallId: decision.toolCallId,
-          atbashConfidence: null,
-        };
-      }
 
       if (decision.verdict === "BLOCK" || decision.verdict === "ERROR") {
         return {
