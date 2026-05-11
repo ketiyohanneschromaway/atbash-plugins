@@ -32,7 +32,7 @@ export async function judgeForAutoGen(
 
   return client.auditToolCall({
     toolName: input.toolName ?? "autogen_action",
-    args: input.toolArgs ?? {},
+    args: input.toolArgs ?? { action },
     context: `${action} — ${context}`,
   });
 }
