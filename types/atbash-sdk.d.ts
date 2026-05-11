@@ -184,4 +184,46 @@ declare module "@atbash/sdk" {
     opts?: ClientOpts,
   ): Promise<Record<string, unknown>>;
   export function getSafetyStats(opts?: ClientOpts): Promise<Record<string, unknown>>;
+
+  // ── High-level audit client API (SDK 0.3.8+) ───────────────────────────
+  export type DecisionVerdict = "ALLOW" | "HOLD" | "BLOCK" | "ERROR";
+
+  export interface Decision {
+    allow: boolean;
+    verdict: DecisionVerdict;
+    reason?: string;
+    toolCallId?: string;
+  }
+
+  export interface ToolCallInput {
+    toolName: string;
+    args?: unknown;
+    context?: string;
+  }
+
+  export interface ValidatedEndpoint {
+    url: string;
+    policy: "default" | "self-hosted";
+    verifyPubKey: string | null;
+  }
+
+  export type JudgeEndpointConfig =
+    | { policy?: "default"; endpoint?: string }
+    | { policy: "self-hosted"; endpoint: string; verifyPubKey: string };
+
+  export interface AtbashClientConfig {
+    judge?: JudgeEndpointConfig;
+    nodeUrls?: string[];
+    blockchainRid?: string;
+    keyPath?: string;
+    keyPair?: AgentAuth;
+    failClosed?: boolean;
+    logger?: { info?: (...args: unknown[]) => void; warn?: (...args: unknown[]) => void };
+  }
+
+  export interface AtbashClient {
+    auditToolCall(input: ToolCallInput): Promise<Decision>;
+  }
+
+  export function createAtbashClient(config?: AtbashClientConfig): AtbashClient;
 }

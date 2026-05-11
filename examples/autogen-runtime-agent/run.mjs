@@ -1,4 +1,4 @@
-import { loadAgent } from "@atbash/sdk";
+import { createAtbashClient, loadAgent } from "@atbash/sdk";
 import { judgeForAutoGen } from "@atbash/autogen";
 
 function requireEnv(name) {
@@ -16,6 +16,10 @@ const requestedAction =
   "Bank transfer $25 to a new external vendor account for urgent reimbursement";
 
 const agent = loadAgent(atbashPrivkey);
+const client = createAtbashClient({
+  keyPair: agent,
+  judge: atbashEndpoint ? { endpoint: atbashEndpoint } : undefined,
+});
 
 async function main() {
   console.log("Atbash agent pubkey:", agent.pubkey);
@@ -30,8 +34,7 @@ async function main() {
         request: requestedAction,
       },
     },
-    agent,
-    atbashEndpoint ? { endpoint: atbashEndpoint } : {},
+    client,
   );
 
   console.log("\n[AutoGen Judge Result]");
