@@ -1,6 +1,6 @@
-import { judgeAction, type AgentAuth, type ClientOpts } from "@atbash/sdk";
+import type { AtbashClient } from "@atbash/sdk";
 import { AIMessage, ToolMessage } from "@langchain/core/messages";
-import { interrupt, isGraphBubbleUp } from "@langchain/langgraph";
+import { isGraphBubbleUp } from "@langchain/langgraph";
 import type { AtbashState } from "../state.js";
 
 type ToolCall = {
@@ -10,8 +10,7 @@ type ToolCall = {
 };
 
 export interface GuardNodeOptions {
-  agent: AgentAuth;
-  clientOpts?: ClientOpts;
+  client: AtbashClient;
 }
 
 export function createGuardNode(opts: GuardNodeOptions) {
@@ -31,67 +30,33 @@ export function createGuardNode(opts: GuardNodeOptions) {
       .join("; ");
 
     try {
-      const result = await judgeAction(
-        actionText,
-        `LangGraph agent attempting: ${actionText}`,
-        opts.agent,
-        opts.clientOpts,
-      );
+      const decision = await opts.client.auditToolCall({
+        toolName: toolCalls.map((t) => t.name).join(",") || "langgraph_batch",
+        args: toolCalls,
+        context: `LangGraph agent attempting: ${actionText}`,
+      });
 
-      if (result.verdict === "HOLD") {
-        const operatorDecision = interrupt({
-          type: "atbash_hold",
-          tool_call_id: result.tool_call_id,
-          reason: result.reason,
-          action: actionText,
-          confidence: result.confidence,
-        });
-
-        if (operatorDecision === "approve" || operatorDecision === "ALLOW") {
-          return {
-            atbashVerdict: "ALLOW",
-            atbashReason: "Approved by operator",
-            atbashToolCallId: result.tool_call_id,
-            atbashConfidence: result.confidence,
-          };
-        }
-
+      if (decision.verdict === "BLOCK" || decision.verdict === "ERROR") {
         return {
           messages: toolCalls.map(
             (toolCall) =>
               new ToolMessage({
                 tool_call_id: toolCall.id,
-                content: `Action rejected by operator: ${String(operatorDecision ?? "no reason given")}`,
+                content: `BLOCKED by Atbash safety policy: ${decision.reason ?? "no reason"}`,
               }),
           ),
           atbashVerdict: "BLOCK",
-          atbashReason: `Rejected by operator: ${String(operatorDecision ?? "unknown")}`,
-          atbashToolCallId: result.tool_call_id,
-          atbashConfidence: result.confidence,
-        };
-      }
-
-      if (result.verdict === "BLOCK") {
-        return {
-          messages: toolCalls.map(
-            (toolCall) =>
-              new ToolMessage({
-                tool_call_id: toolCall.id,
-                content: `BLOCKED by Atbash safety policy: ${result.reason}`,
-              }),
-          ),
-          atbashVerdict: "BLOCK",
-          atbashReason: result.reason,
-          atbashToolCallId: result.tool_call_id,
-          atbashConfidence: result.confidence,
+          atbashReason: decision.reason ?? "blocked by Atbash",
+          atbashToolCallId: decision.toolCallId,
+          atbashConfidence: null,
         };
       }
 
       return {
         atbashVerdict: "ALLOW",
-        atbashReason: result.reason,
-        atbashToolCallId: result.tool_call_id,
-        atbashConfidence: result.confidence,
+        atbashReason: decision.reason,
+        atbashToolCallId: decision.toolCallId,
+        atbashConfidence: null,
       };
     } catch (error) {
       if (isGraphBubbleUp(error)) {
